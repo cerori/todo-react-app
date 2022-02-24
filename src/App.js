@@ -4,6 +4,7 @@ import Todo from './Todo';
 
 import './App.css';
 import AddTodo from "./AddTodo";
+import { call } from "./service/ApiService";
 
 class App extends React.Component {
   constructor(props) {
@@ -14,23 +15,34 @@ class App extends React.Component {
   }
 
   add = (item) => {
-    const thisItem = this.state.items;
-    item.id = "ID-" + thisItem.length;
-    item.done = false;
-    thisItem.push(item);
-    this.setState({items: thisItem});
-    console.log("items: ", this.state.items);
+    // const thisItem = this.state.items;
+    // item.id = "ID-" + thisItem.length;
+    // item.done = false;
+    // thisItem.push(item);
+    // this.setState({items: thisItem});
+    // console.log("items: ", this.state.items);
+    call("/todo", "POST", item).then(response => {
+      this.setState({items: response.data})
+    })
+  }
 
+  update = (item) => {
+    call("/todo", "PUT", item).then(response => {
+      this.setState({items: response.data})
+    })
   }
 
   delete = (item) => {
-    const thisItems = this.state.items;
-    console.log("Before Update Items : ", this.state.items)
-    const newItems = thisItems.filter(e => e.id !== item.id);
-    this.setState({items: newItems}, () => {
-      // 콜백
-      console.log("Update Items : ", this.state.items);
-    });
+    // const thisItems = this.state.items;
+    // console.log("Before Update Items : ", this.state.items)
+    // const newItems = thisItems.filter(e => e.id !== item.id);
+    // this.setState({items: newItems}, () => {
+    //   // 콜백
+    //   console.log("Update Items : ", this.state.items);
+    // });
+    call("/todo", "DELETE", item).then(response => {
+      this.setState({items: response.data})
+    })
   }
 
   render() {
@@ -38,7 +50,12 @@ class App extends React.Component {
       <Paper style={{margin: 16}}>
         <List>
           {this.state.items.map((item, idx) => (
-            <Todo item={item} key={item.id} delete={this.delete} />
+            <Todo 
+              item={item} 
+              key={item.id} 
+              delete={this.delete} 
+              update={this.update}
+            />
           ))}
         </List>
       </Paper>
@@ -55,23 +72,10 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    const requestOptions = {
-      method: "GET",
-      headers: {"Content-type": "application/json"}
-    }
-
-    fetch("http://localhost:8080/todo", requestOptions)
-    .then((response) => response.json())
-    .then(
-      (response) => {
-        this.setState({items: response.data});
-      },
-      (error) => {
-        this.setState({
-          error
-        });
-      }
-    );
+    call("/todo", "GET", null).then(response => {
+      // console.log(response)
+      this.setState({items: response.data})
+    })
   }
 }
 
