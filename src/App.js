@@ -1,16 +1,26 @@
 import React from "react";
-import { Paper, List, Container } from "@material-ui/core";
+import { 
+  Paper, 
+  List, 
+  Container, 
+  Grid, 
+  Button, 
+  AppBar, 
+  Toolbar, 
+  Typography 
+} from "@material-ui/core";
 import Todo from './Todo';
 
 import './App.css';
 import AddTodo from "./AddTodo";
-import { call } from "./service/ApiService";
+import { call, logout} from "./service/ApiService";
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      items: []
+      items: [],
+      loading: true
     }
   }
 
@@ -60,13 +70,45 @@ class App extends React.Component {
         </List>
       </Paper>
     )
- 
-    return (
-      <div className="App">
+
+    var navigationBar = (
+      <AppBar position="static">
+        <Toolbar>
+          <Grid justifyContent="space-between" container>
+            <Grid item>
+              <Typography variant="h6">오늘의 할일</Typography>
+            </Grid>
+            <Grid>
+              <Button color="inherit" onClick={logout}>
+                로그아웃
+              </Button>
+            </Grid>
+          </Grid>
+        </Toolbar>
+      </AppBar>
+    )
+
+    var todoListPage = (
+      <div>
+        {navigationBar}
         <Container maxWidth="md">
           <AddTodo add={this.add} />
           <div className="TodoList">{todoItems}</div>
         </Container>
+      </div>
+    )
+
+    var loadingPage = <h1>로딩중...</h1>;
+
+    var content = loadingPage;
+
+    if (!this.state.loading) {
+      content = todoListPage;
+    }
+ 
+    return (
+      <div className="App">
+        {content}
       </div>
     );
   }
@@ -74,7 +116,7 @@ class App extends React.Component {
   componentDidMount() {
     call("/todo", "GET", null).then(response => {
       // console.log(response)
-      this.setState({items: response.data})
+      this.setState({items: response.data, loading: false})
     })
   }
 }
